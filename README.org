@@ -1,0 +1,31 @@
+* Simple Data Warehouse (ETL+Query)
+** Objective
+Write a simple backend application that exposes data - extracted from a CSV file - via an API. The file can be found here:
+
+Sample data can be found [[file:data.csv][here]].
+
+Transform it to your needs so it can be loaded into your chosen data store.
+The API should make it possible to query the data in a generic and efficient way.
+
+*** Possible queries
+- Total Clicks for a given Datasource for a given Date range
+- Click-Through Rate (CTR) per Datasource and Campaign
+- Impressions over time (daily)
+
+*** Data Points
+    Time dimension (Date)
+    regular dimensions (Campaign, Datasource)
+    metrics (Clicks, Impressions)
+
+*** The API parameters
+- Set of metrics including calculated ones to be aggregated on
+- Optional set of dimensions to be grouped by
+- Optional set of dimension filters to be filtered on
+
+*** Requirements
+- Design any architecture that fits the problem/use case best
+- Model the API contract on your behalf
+- Use any additional tech that helps extract, transform, load and query the data
+
+*** Deliverable
+- a deployable container
