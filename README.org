@@ -1,0 +1,28 @@
+* Product Offer Aggregation
+** Objective
+Build an application that aggregates offers for a product.
+
+An offer has two attributes:
+- a floating point "price"
+- a string "productCode".
+
+A "product offer aggregation" has the following attributes:
+- min price of the aggregated offers
+- max price of the aggregated offers
+- average price of the aggregated offers
+- count of the offers
+
+An aggregation can be in two states: ~open~ or ~closed~
+
+Only aggregations with more than =N= offers can be closed, where =N= is
+configurable and defaults to 3.
+
+Sample data is [[file:data.csv][here]].
+
+*** Acceptance criteria
+- A closed aggregation does not accept any more offers.
+- The service's API should allow:
+  - querying for an aggregation for a given product code
+  - closing the aggregation
+  - supplying offers for the aggregation
+- The offers to aggregate should be batched or streamed.
