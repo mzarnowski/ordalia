@@ -35,3 +35,7 @@ There are multiple causes for it to not affect the aggregation, the most basic b
 In this case, we could return a boolean, but this doesn't allow us to distinguishing between interacting with an
 already closed aggregation. By returning a list of "events", which resulted from the operation, we have an easy interface
 to expose various reasons something happened (or not). Additionally, returning an empty list means "nothing happened".
+
+*** Remaining quota is not included in the OfferAppended event
+Currently, there is no use case for an external entity to know about the state of the quota.
+If there was a service reacting to that, we might include it in the future.
