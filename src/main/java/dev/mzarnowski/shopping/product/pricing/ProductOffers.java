@@ -1,6 +1,7 @@
 package dev.mzarnowski.shopping.product.pricing;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ProductOffers {
@@ -19,7 +20,11 @@ public class ProductOffers {
     }
 
     public List<Event> append(ProductCode productCode, Price price) {
-        return List.of(new OfferAppended(productCode, price));
+        if (isOpen.get()) {
+            return List.of(new OfferAppended(productCode, price));
+        }
+
+        return List.of(new FailedAppendingOffer(productCode, price, new AggregationIsClosed(productCode)));
     }
 
     public sealed interface Event {}
@@ -27,4 +32,27 @@ public class ProductOffers {
     public record AggregationClosed(ProductCode productCode) implements Event {}
 
     public record OfferAppended(ProductCode productCode, Price price) implements Event {}
+
+    public record FailedAppendingOffer(ProductCode productCode, Price price, Exception cause) implements Event {}
+
+    public static final class AggregationIsClosed extends RuntimeException {
+        private final ProductCode productCode;
+
+        public AggregationIsClosed(ProductCode productCode) {
+            this.productCode = productCode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AggregationIsClosed that = (AggregationIsClosed) o;
+            return productCode.equals(that.productCode);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(productCode);
+        }
+    }
 }

@@ -41,4 +41,16 @@ class ProductOffersTest {
         // then it can be closed
         assertEquals(List.of(), aggregation.close());
     }
+
+    @Test
+    public void closed_aggregation_does_not_accept_new_offers() {
+        // given an open aggregation
+        var aggregation = new ProductOffers(PRODUCT_CODE);
+        aggregation.close();
+
+        // then new offer can be appended
+        var expectedEvent = new FailedAppendingOffer(PRODUCT_CODE, PRICE, new AggregationIsClosed(PRODUCT_CODE));
+        var events = aggregation.append(PRODUCT_CODE, PRICE);
+        assertEquals(List.of(expectedEvent), events);
+    }
 }
