@@ -18,8 +18,13 @@ public class ProductOffers {
         return List.of();
     }
 
+    public List<Event> append(ProductCode productCode, Price price) {
+        return List.of(new OfferAppended(productCode, price));
+    }
+
     public sealed interface Event {}
 
     public record AggregationClosed(ProductCode productCode) implements Event {}
 
+    public record OfferAppended(ProductCode productCode, Price price) implements Event {}
 }
