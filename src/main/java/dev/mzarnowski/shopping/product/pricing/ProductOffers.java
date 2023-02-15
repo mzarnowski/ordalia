@@ -1,14 +1,19 @@
 package dev.mzarnowski.shopping.product.pricing;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static dev.mzarnowski.shopping.product.pricing.Statistics.Quality.*;
+
 public class ProductOffers {
     private final ProductCode productCode;
     private final AtomicInteger remainingQuota;
+    private final Statistics statistics = new Statistics(MathContext.DECIMAL64);
     private final AtomicBoolean isOpen = new AtomicBoolean(true);
 
     public ProductOffers(ProductCode productCode, int quota) {
@@ -18,7 +23,7 @@ public class ProductOffers {
 
     public List<Event> close() {
         var remainingQuota = this.remainingQuota.get();
-        if(0 < remainingQuota){
+        if (0 < remainingQuota) {
             return List.of(new FailedClosingAggregation(productCode, new QuotaNotReached(productCode, remainingQuota)));
         }
 
@@ -30,7 +35,8 @@ public class ProductOffers {
 
     public List<Event> append(ProductCode productCode, Price price) {
         if (isOpen.get()) {
-            remainingQuota.decrementAndGet();
+            remainingQuota.updateAndGet(it -> Math.max(0, it - 1));
+            statistics.update(price.value());
             return List.of(new OfferAppended(productCode, price));
         }
 
@@ -38,11 +44,21 @@ public class ProductOffers {
     }
 
     public Optional<Aggregation> getAggregation() {
-        return Optional.empty();
+        var count = statistics.get(COUNT).longValue();
+
+        if (count == 0) {
+            return Optional.empty();
+        }
+
+        var max = statistics.get(MAX);
+        var min = statistics.get(MIN);
+        var average = statistics.get(AVERAGE);
+
+        var aggregation = new Aggregation(count, min, max, average);
+        return Optional.of(aggregation);
     }
 
-    record Aggregation() {}
-
+    record Aggregation(long count, BigDecimal min, BigDecimal max, BigDecimal average) {}
 
     public sealed interface Event {}
 

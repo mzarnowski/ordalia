@@ -39,3 +39,12 @@ to expose various reasons something happened (or not). Additionally, returning a
 *** Remaining quota is not included in the OfferAppended event
 Currently, there is no use case for an external entity to know about the state of the quota.
 If there was a service reacting to that, we might include it in the future.
+
+*** Aggregation state and summary of the product offers are decoupled
+Other way is to couple status and order summary (e.g. `record State(status, statistics)`). That way, we could have
+atomic operations through AtomicReference. It would work correctly. Two downsides are:
+- more complex logic
+- closing the aggregation would race with updating the statistics (probably not a big issue)
+
+By decoupling them (i.e. updating status independently from statistics), we get a bit simpler implementation.
+As previously, we expect races between closing and appending (i.e. something might get appended before we start and finish closing)
