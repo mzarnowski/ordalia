@@ -1,4 +1,4 @@
-package dev.mzarnowski.shopping.product.pricing;
+package dev.mzarnowski.shopping.product;
 
 import org.junit.jupiter.api.Test;
 

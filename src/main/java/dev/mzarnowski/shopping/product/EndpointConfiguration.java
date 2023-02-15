@@ -1,4 +1,4 @@
-package dev.mzarnowski.shopping.product.pricing;
+package dev.mzarnowski.shopping.product;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

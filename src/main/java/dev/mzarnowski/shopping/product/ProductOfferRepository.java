@@ -1,4 +1,4 @@
-package dev.mzarnowski.shopping.product.pricing;
+package dev.mzarnowski.shopping.product;
 
 import java.util.HashMap;
 import java.util.Map;

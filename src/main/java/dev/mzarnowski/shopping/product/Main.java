@@ -1,4 +1,4 @@
-package dev.mzarnowski.shopping.product.pricing;
+package dev.mzarnowski.shopping.product;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

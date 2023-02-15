@@ -1,4 +1,36 @@
 * Product Offer Aggregation
+** Dockerized application
+
+To build the image, run
+#+BEGIN_SRC bash
+./gradlew build-docker-image
+#+END_SRC
+
+Image will be called product-offers:${VERSION} Rest endpoint listens on the port 8080 within the container.
+
+*** Running the container locally
+#+begin_src bash
+docker container run \
+      -e JAVA_OPTS="-Dproduct.offers.aggregation.quota=1" \
+      -i -p 8080:8080 \
+      --rm -t product-offers:<version>
+#+end_src
+*** Exposed endpoints:
+**** Appending new offer
+#+begin_src REST
+POST http://localhost:8080/product/<product-code>/offers
+Content-Type: application/json
+
+<numerical-price>
+#+end_src
+**** Closing product aggregation
+#+begin_src REST
+PUT http://localhost:8080/product/<product-code>/offers/close
+#+end_src
+**** Requesting current aggregation
+#+begin_src REST
+GET http://localhost:8080/product/<product-code>/offers/aggregation
+#+end_src
 ** Objective
 Build an application that aggregates offers for a product.
 

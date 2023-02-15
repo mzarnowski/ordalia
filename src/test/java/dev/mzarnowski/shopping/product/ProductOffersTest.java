@@ -1,12 +1,11 @@
-package dev.mzarnowski.shopping.product.pricing;
+package dev.mzarnowski.shopping.product;
 
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
-import static dev.mzarnowski.shopping.product.pricing.ProductOffers.*;
+import static dev.mzarnowski.shopping.product.ProductOffers.*;
 import static java.math.BigDecimal.ONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -1,14 +1,11 @@
-package dev.mzarnowski.shopping.product.pricing;
+package dev.mzarnowski.shopping.product;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static dev.mzarnowski.shopping.product.pricing.Statistics.Quality.*;
 
 public class ProductOffers {
     private final ProductCode productCode;
@@ -45,15 +42,15 @@ public class ProductOffers {
     }
 
     public Optional<Aggregation> getAggregation() {
-        var count = statistics.get(COUNT).longValue();
+        var count = statistics.get(Statistics.Quality.COUNT).longValue();
 
         if (count == 0) {
             return Optional.empty();
         }
 
-        var max = statistics.get(MAX);
-        var min = statistics.get(MIN);
-        var average = statistics.get(AVERAGE);
+        var max = statistics.get(Statistics.Quality.MAX);
+        var min = statistics.get(Statistics.Quality.MIN);
+        var average = statistics.get(Statistics.Quality.AVERAGE);
 
         var aggregation = new Aggregation(count, min, max, average);
         return Optional.of(aggregation);
