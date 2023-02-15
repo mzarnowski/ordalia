@@ -21,10 +21,10 @@ public class ProductOffers {
         this.remainingQuota = new AtomicInteger(quota);
     }
 
-    public Optional<Event> close() {
+    public Optional<AggregationClosed> close() {
         var remainingQuota = this.remainingQuota.get();
         if (0 < remainingQuota) {
-            return Optional.of(new FailedClosingAggregation(productCode, new QuotaNotReached(productCode, remainingQuota)));
+            throw new QuotaNotReached(productCode, remainingQuota);
         }
 
         if (isOpen.compareAndSet(true, false)) {
@@ -34,14 +34,14 @@ public class ProductOffers {
         return Optional.empty();
     }
 
-    public Event append(ProductCode productCode, Price price) {
+    public OfferAppended append(ProductCode productCode, Price price) {
         if (isOpen.get()) {
             remainingQuota.updateAndGet(it -> Math.max(0, it - 1));
             statistics.update(price.value());
             return new OfferAppended(productCode, price);
         }
 
-        return new FailedAppendingOffer(productCode, price, new AggregationIsClosed(productCode));
+        throw new AggregationIsClosed(productCode);
     }
 
     public Optional<Aggregation> getAggregation() {
@@ -66,10 +66,6 @@ public class ProductOffers {
     public record AggregationClosed(ProductCode productCode) implements Event {}
 
     public record OfferAppended(ProductCode productCode, Price price) implements Event {}
-
-    public record FailedAppendingOffer(ProductCode productCode, Price price, Exception cause) implements Event {}
-
-    public record FailedClosingAggregation(ProductCode productCode, Exception cause) implements Event {}
 
     public static final class AggregationIsClosed extends RuntimeException {
         private final ProductCode productCode;

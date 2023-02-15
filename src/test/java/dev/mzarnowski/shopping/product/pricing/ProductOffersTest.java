@@ -9,6 +9,7 @@ import java.util.Optional;
 import static dev.mzarnowski.shopping.product.pricing.ProductOffers.*;
 import static java.math.BigDecimal.ONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ProductOffersTest {
     private static final ProductCode PRODUCT_CODE = new ProductCode("foo");
@@ -39,7 +40,7 @@ class ProductOffersTest {
         productOffers.close();
 
         // and another offer is tried
-        productOffers.append(PRODUCT_CODE, Price.of(BigDecimal.valueOf(10000)));
+        assertThrows(AggregationIsClosed.class, () -> productOffers.append(PRODUCT_CODE, Price.of(BigDecimal.valueOf(10000))));
 
         // then the price after closing is not included in the statistics
         var expected = new ProductOffers.Aggregation(4L, ONE, BigDecimal.valueOf(4), new BigDecimal("2.50"));
@@ -64,10 +65,7 @@ class ProductOffersTest {
 
         // then the aggregation can be closed only after reaching the quota
         for (int i = 0; i < quota; ++i) {
-            var expectedEvent = new FailedClosingAggregation(PRODUCT_CODE, new QuotaNotReached(PRODUCT_CODE, quota - i));
-            var events = productOffers.close();
-            assertEquals(Optional.of(expectedEvent), events);
-
+            assertThrows(QuotaNotReached.class, productOffers::close);
             productOffers.append(PRODUCT_CODE, PRICE);
         }
 
@@ -91,9 +89,7 @@ class ProductOffersTest {
         var productOffers = new ProductOffers(PRODUCT_CODE, QUOTA);
         productOffers.close();
 
-        // then new offer can be appended
-        var result = new FailedAppendingOffer(PRODUCT_CODE, PRICE, new AggregationIsClosed(PRODUCT_CODE));
-        var events = productOffers.append(PRODUCT_CODE, PRICE);
-        assertEquals(result, events);
+        // then new offer can't be appended
+        assertThrows(AggregationIsClosed.class, () -> productOffers.append(PRODUCT_CODE, PRICE));
     }
 }

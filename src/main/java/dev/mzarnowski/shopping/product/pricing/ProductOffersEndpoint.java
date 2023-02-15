@@ -16,29 +16,26 @@ class ProductOffersEndpoint {
     }
 
     @PutMapping(path = "/{id}/offers/close")
-    public void closeAggregation(@PathVariable String id) {
+    public ResponseEntity<Void> closeAggregation(@PathVariable String id) {
         try {
             var product = new ProductCode(id);
-            var result = repository.offersOf(product).close().orElse(new ProductOffers.AggregationClosed(product));
-            if (result instanceof ProductOffers.AggregationClosed) {
-                throw new ResponseStatusException(OK);
-            } else if (result instanceof ProductOffers.FailedClosingAggregation failure) {
-                throw new ResponseStatusException(FORBIDDEN, failure.cause().getMessage());
-            }
-        } catch (IllegalArgumentException e) {
+            repository.offersOf(product).close();
+            return ResponseEntity.ok().build();
+        } catch (ProductOffers.QuotaNotReached e) {
+            throw new ResponseStatusException(FORBIDDEN, e.getMessage());
+        }catch (IllegalArgumentException e) {
             throw new ResponseStatusException(BAD_REQUEST, e.getMessage());
         }
     }
 
     @PostMapping(path = "/{id}/offers")
-    public ResponseEntity<Void> postOffer(@PathVariable String id, @RequestBody Price price) {
+    public ResponseEntity<Void> appendOffer(@PathVariable String id, @RequestBody Price price) {
         try {
             var product = new ProductCode(id);
-            var events = repository.offersOf(product).append(product, price);
-            if (events instanceof ProductOffers.FailedAppendingOffer failure) {
-                throw new ResponseStatusException(FORBIDDEN, failure.cause().getMessage());
-            }
+            repository.offersOf(product).append(product, price);
             return ResponseEntity.ok().build();
+        } catch (ProductOffers.AggregationIsClosed e) {
+            throw new ResponseStatusException(FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(BAD_REQUEST, e.getMessage());
         }
