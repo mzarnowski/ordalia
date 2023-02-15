@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatisticsTest {
     @Test
-    public void aggregates_values(){
+    public void aggregates_values() {
         var context = new MathContext(2, HALF_EVEN);
         var statistics = new Statistics(context);
 
