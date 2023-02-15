@@ -21,26 +21,27 @@ public class ProductOffers {
         this.remainingQuota = new AtomicInteger(quota);
     }
 
-    public List<Event> close() {
+    public Optional<Event> close() {
         var remainingQuota = this.remainingQuota.get();
         if (0 < remainingQuota) {
-            return List.of(new FailedClosingAggregation(productCode, new QuotaNotReached(productCode, remainingQuota)));
+            return Optional.of(new FailedClosingAggregation(productCode, new QuotaNotReached(productCode, remainingQuota)));
         }
 
         if (isOpen.compareAndSet(true, false)) {
-            return List.of(new AggregationClosed(productCode));
+            return Optional.of(new AggregationClosed(productCode));
         }
-        return List.of();
+
+        return Optional.empty();
     }
 
-    public List<Event> append(ProductCode productCode, Price price) {
+    public Event append(ProductCode productCode, Price price) {
         if (isOpen.get()) {
             remainingQuota.updateAndGet(it -> Math.max(0, it - 1));
             statistics.update(price.value());
-            return List.of(new OfferAppended(productCode, price));
+            return new OfferAppended(productCode, price);
         }
 
-        return List.of(new FailedAppendingOffer(productCode, price, new AggregationIsClosed(productCode)));
+        return new FailedAppendingOffer(productCode, price, new AggregationIsClosed(productCode));
     }
 
     public Optional<Aggregation> getAggregation() {

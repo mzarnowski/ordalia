@@ -53,7 +53,7 @@ class ProductOffersTest {
 
         // then new offer can be appended
         var events = productOffers.append(PRODUCT_CODE, PRICE);
-        assertEquals(List.of(new OfferAppended(PRODUCT_CODE, PRICE)), events);
+        assertEquals(new OfferAppended(PRODUCT_CODE, PRICE), events);
     }
 
     @Test
@@ -66,13 +66,13 @@ class ProductOffersTest {
         for (int i = 0; i < quota; ++i) {
             var expectedEvent = new FailedClosingAggregation(PRODUCT_CODE, new QuotaNotReached(PRODUCT_CODE, quota - i));
             var events = productOffers.close();
-            assertEquals(List.of(expectedEvent), events);
+            assertEquals(Optional.of(expectedEvent), events);
 
             productOffers.append(PRODUCT_CODE, PRICE);
         }
 
         var events = productOffers.close();
-        assertEquals(List.of(new AggregationClosed(PRODUCT_CODE)), events);
+        assertEquals(Optional.of(new AggregationClosed(PRODUCT_CODE)), events);
     }
 
     @Test
@@ -82,7 +82,7 @@ class ProductOffersTest {
         productOffers.close();
 
         // then it can be closed
-        assertEquals(List.of(), productOffers.close());
+        assertEquals(Optional.empty(), productOffers.close());
     }
 
     @Test
@@ -92,8 +92,8 @@ class ProductOffersTest {
         productOffers.close();
 
         // then new offer can be appended
-        var expectedEvent = new FailedAppendingOffer(PRODUCT_CODE, PRICE, new AggregationIsClosed(PRODUCT_CODE));
+        var result = new FailedAppendingOffer(PRODUCT_CODE, PRICE, new AggregationIsClosed(PRODUCT_CODE));
         var events = productOffers.append(PRODUCT_CODE, PRICE);
-        assertEquals(List.of(expectedEvent), events);
+        assertEquals(result, events);
     }
 }
