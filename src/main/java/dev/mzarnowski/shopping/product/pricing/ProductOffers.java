@@ -2,6 +2,7 @@ package dev.mzarnowski.shopping.product.pricing;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,6 +36,13 @@ public class ProductOffers {
 
         return List.of(new FailedAppendingOffer(productCode, price, new AggregationIsClosed(productCode)));
     }
+
+    public Optional<Aggregation> getAggregation() {
+        return Optional.empty();
+    }
+
+    record Aggregation() {}
+
 
     public sealed interface Event {}
 
