@@ -7,13 +7,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public final class Room {
     private final Id id;
     // embedding the operating hours here, means these are the same every day
     private final OperatingHours operatingHours;
 
-    private final Map<LocalDate, Set<LocalTime>> showings = new HashMap<>();
+    private final Map<LocalDate, Set<LocalTime>> showings = new ConcurrentHashMap<>();
 
     public Room(Id id, OperatingHours operatingHours) {
         this.id = id;
@@ -25,7 +27,7 @@ public final class Room {
             return List.of(new RejectedSchedulingOutsideOperatingHours(id, start, operatingHours));
         }
 
-        var showings = this.showings.computeIfAbsent(start.toLocalDate(), date -> new HashSet<>());
+        var showings = this.showings.computeIfAbsent(start.toLocalDate(), date -> new ConcurrentSkipListSet<>());
         if (showings.add(start.toLocalTime())){
             return List.of(new MovieScheduled(id, start));
         } else {
