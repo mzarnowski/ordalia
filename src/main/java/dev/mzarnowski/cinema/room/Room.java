@@ -15,12 +15,14 @@ public final class Room {
     private final Id id;
     // embedding the operating hours here, means these are the same every day
     private final OperatingHours operatingHours;
+    private final Duration cleaningTime;
 
     private final Map<LocalDate, Set<LocalTime>> showings = new ConcurrentHashMap<>();
 
-    public Room(Id id, OperatingHours operatingHours) {
+    public Room(Id id, OperatingHours operatingHours, Duration cleaningTime) {
         this.id = id;
         this.operatingHours = operatingHours;
+        this.cleaningTime = cleaningTime;
     }
 
     public List<Event> schedule(ZonedDateTime start, Duration duration) {
@@ -30,7 +32,7 @@ public final class Room {
 
         var showings = this.showings.computeIfAbsent(start.toLocalDate(), date -> new ConcurrentSkipListSet<>());
         if (showings.add(start.toLocalTime())){
-            return List.of(new MovieScheduled(id, start));
+            return List.of(new MovieScheduled(id, start, duration));
         } else {
             return List.of(new RejectedOverlappingSchedule(start));
         }
@@ -38,7 +40,7 @@ public final class Room {
 
     public record Id(String value) {}
 
-    public record MovieScheduled(Id id, ZonedDateTime start) implements Event {}
+    public record MovieScheduled(Id id, ZonedDateTime start, Duration duration) implements Event {}
 
     public record RejectedSchedulingOutsideOperatingHours(Id id, ZonedDateTime time, OperatingHours hours) implements Event {}
 
