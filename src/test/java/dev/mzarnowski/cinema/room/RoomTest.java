@@ -56,7 +56,8 @@ public class RoomTest {
         // then a schedule request is rejected
         var events = room.schedule(timeBeforeOpening, DURATION);
         Assertions.assertThat(events)
-                .containsOnly(new Room.RejectedSchedulingOutsideOperatingHours(ROOM_ID, timeBeforeOpening, OPERATING_HOURS));
+                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, timeBeforeOpening, DURATION,
+                        new Room.OutsideOperatingHours(OPERATING_HOURS)));
     }
 
     @Test
@@ -68,7 +69,8 @@ public class RoomTest {
         // then a schedule request is rejected
         var events = room.schedule(timeAfterClosing, DURATION);
         Assertions.assertThat(events)
-                .containsOnly(new Room.RejectedSchedulingOutsideOperatingHours(ROOM_ID, timeAfterClosing, OPERATING_HOURS));
+                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, timeAfterClosing, DURATION,
+                        new Room.OutsideOperatingHours(OPERATING_HOURS)));
     }
 
     @Test
@@ -80,7 +82,8 @@ public class RoomTest {
         // then a schedule request is rejected
         var events = room.schedule(timeJustBeforeClosing, DURATION);
         Assertions.assertThat(events)
-                .containsOnly(new Room.RejectedSchedulingOutsideOperatingHours(ROOM_ID, timeJustBeforeClosing, OPERATING_HOURS));
+                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, timeJustBeforeClosing, DURATION,
+                        new Room.OutsideOperatingHours(OPERATING_HOURS)));
     }
 
     @Test
@@ -92,7 +95,8 @@ public class RoomTest {
 
         // then another movie cannot be scheduled at the same time
         var events = room.schedule(START_TIME, DURATION);
-        Assertions.assertThat(events).containsOnly(new Room.RejectedOverlappingSchedule(START_TIME));
+        Assertions.assertThat(events).containsOnly(new Room.MovieScheduleRejected(ROOM_ID, START_TIME, DURATION,
+                new Room.SlotAlreadyTaken()));
     }
 
     @RepeatedTest(100)

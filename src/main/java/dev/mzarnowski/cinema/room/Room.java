@@ -27,14 +27,14 @@ public final class Room {
 
     public List<Event> schedule(ZonedDateTime start, Duration duration) {
         if (!operatingHours.contains(start) || !operatingHours.contains(start.plus(duration))) {
-            return List.of(new RejectedSchedulingOutsideOperatingHours(id, start, operatingHours));
+            return List.of(new MovieScheduleRejected(id, start, duration, new OutsideOperatingHours(operatingHours)));
         }
 
         var showings = this.showings.computeIfAbsent(start.toLocalDate(), date -> new ConcurrentSkipListSet<>());
         if (showings.add(start.toLocalTime())){
             return List.of(new MovieScheduled(id, start, duration));
         } else {
-            return List.of(new RejectedOverlappingSchedule(start));
+            return List.of(new MovieScheduleRejected(id, start, duration, new SlotAlreadyTaken()));
         }
     }
 
@@ -42,7 +42,11 @@ public final class Room {
 
     public record MovieScheduled(Id id, ZonedDateTime start, Duration duration) implements Event {}
 
-    public record RejectedSchedulingOutsideOperatingHours(Id id, ZonedDateTime time, OperatingHours hours) implements Event {}
+    public record MovieScheduleRejected(Id id, ZonedDateTime start, Duration duration, Reason reason) implements Event {}
 
-    public record RejectedOverlappingSchedule(ZonedDateTime startTime) implements Event {}
+    public sealed interface Reason {}
+
+    public record OutsideOperatingHours(OperatingHours hours) implements Reason {}
+
+    public record SlotAlreadyTaken() implements Reason {}
 }
