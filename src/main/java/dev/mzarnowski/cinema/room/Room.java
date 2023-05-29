@@ -3,6 +3,7 @@ package dev.mzarnowski.cinema.room;
 import dev.mzarnowski.cinema.Event;
 import dev.mzarnowski.cinema.OperatingHours;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -22,8 +23,8 @@ public final class Room {
         this.operatingHours = operatingHours;
     }
 
-    public List<Event> schedule(ZonedDateTime start) {
-        if (!operatingHours.contains(start)) {
+    public List<Event> schedule(ZonedDateTime start, Duration duration) {
+        if (!operatingHours.contains(start) || !operatingHours.contains(start.plus(duration))) {
             return List.of(new RejectedSchedulingOutsideOperatingHours(id, start, operatingHours));
         }
 
