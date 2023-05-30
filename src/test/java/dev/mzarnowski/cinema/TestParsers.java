@@ -10,7 +10,7 @@ public final class TestParsers {
         return new OperatingHours(sinceTime, untilTime);
     }
 
-    public static LocalTime time(String value){
+    public static LocalTime time(String value) {
         return LocalTime.parse(value);
     }
 }

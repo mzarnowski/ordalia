@@ -1,7 +1,8 @@
 package dev.mzarnowski.cinema.room;
 
-import dev.mzarnowski.cinema.Event;
+import dev.mzarnowski.cinema.Movie;
 import dev.mzarnowski.cinema.OperatingHours;
+import dev.mzarnowski.cinema.screening.Policy;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -23,6 +25,7 @@ public class RoomTest {
     private static final ZonedDateTime START_TIME = ZonedDateTime.of(LocalDate.now(), OPERATING_HOURS.since(), ZoneOffset.UTC);
     private static final Duration DURATION = Duration.of(30, ChronoUnit.MINUTES);
     private static final Duration CLEANING_TIME = Duration.of(10, ChronoUnit.MINUTES);
+    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), DURATION);
 
     @Test
     public void can_schedule_movie_during_operating_hours() {
@@ -30,9 +33,8 @@ public class RoomTest {
         var room = new Room(ROOM_ID, OPERATING_HOURS, CLEANING_TIME);
 
         // then a movie is scheduled
-        var events = room.schedule(START_TIME, DURATION);
-        Assertions.assertThat(events)
-                .containsOnly(new Room.MovieScheduled(ROOM_ID, START_TIME, DURATION));
+        var veto = room.schedule(MOVIE, START_TIME);
+        Assertions.assertThat(veto).isEmpty();
     }
 
     @Test
@@ -42,9 +44,8 @@ public class RoomTest {
         var start = ZonedDateTime.of(LocalDate.now(), OPERATING_HOURS.until().minus(DURATION), ZoneOffset.UTC);
 
         // then a movie is scheduled
-        var events = room.schedule(start, DURATION);
-        Assertions.assertThat(events)
-                .containsOnly(new Room.MovieScheduled(ROOM_ID, start, DURATION));
+        var veto = room.schedule(MOVIE, start);
+        Assertions.assertThat(veto).isEmpty();
     }
 
     @Test
@@ -54,10 +55,8 @@ public class RoomTest {
         var timeBeforeOpening = ZonedDateTime.of(LocalDate.now(), OPERATING_HOURS.since().minusMinutes(1), ZoneOffset.UTC);
 
         // then a schedule request is rejected
-        var events = room.schedule(timeBeforeOpening, DURATION);
-        Assertions.assertThat(events)
-                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, timeBeforeOpening, DURATION,
-                        new Room.OutsideOperatingHours(OPERATING_HOURS)));
+        var veto = room.schedule(MOVIE, timeBeforeOpening);
+        Assertions.assertThat(veto).contains(new Room.OutsideOperatingHours(OPERATING_HOURS));
     }
 
     @Test
@@ -67,10 +66,8 @@ public class RoomTest {
         var timeAfterClosing = ZonedDateTime.of(LocalDate.now(), OPERATING_HOURS.until().plusMinutes(1), ZoneOffset.UTC);
 
         // then a schedule request is rejected
-        var events = room.schedule(timeAfterClosing, DURATION);
-        Assertions.assertThat(events)
-                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, timeAfterClosing, DURATION,
-                        new Room.OutsideOperatingHours(OPERATING_HOURS)));
+        var veto = room.schedule(MOVIE, timeAfterClosing);
+        Assertions.assertThat(veto).contains(new Room.OutsideOperatingHours(OPERATING_HOURS));
     }
 
     @Test
@@ -80,39 +77,33 @@ public class RoomTest {
         var timeJustBeforeClosing = ZonedDateTime.of(LocalDate.now(), OPERATING_HOURS.until().minusMinutes(1), ZoneOffset.UTC);
 
         // then a schedule request is rejected
-        var events = room.schedule(timeJustBeforeClosing, DURATION);
-        Assertions.assertThat(events)
-                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, timeJustBeforeClosing, DURATION,
-                        new Room.OutsideOperatingHours(OPERATING_HOURS)));
+        var veto = room.schedule(MOVIE, timeJustBeforeClosing);
+        Assertions.assertThat(veto).contains(new Room.OutsideOperatingHours(OPERATING_HOURS));
     }
 
     @Test
     public void movie_cannot_start_when_the_room_is_being_cleaned() {
         // given a room with movie scheduled
         var room = new Room(ROOM_ID, OPERATING_HOURS, CLEANING_TIME);
-        Assertions.assertThat(room.schedule(START_TIME, DURATION))
-                .containsOnly(new Room.MovieScheduled(ROOM_ID, START_TIME, DURATION));
+        Assertions.assertThat(room.schedule(MOVIE, START_TIME)).isEmpty();
 
         // when trying to schedule a movie when the room is being cleaned after the previous show
         var offendingStartTime = START_TIME.plus(DURATION).plusMinutes(1);
-        var events = room.schedule(offendingStartTime, DURATION);
+        var veto = room.schedule(MOVIE, offendingStartTime);
 
         // then scheduling fails
-        Assertions.assertThat(events)
-                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, offendingStartTime, DURATION, new Room.SlotAlreadyTaken()));
+        Assertions.assertThat(veto).contains(new Room.SlotAlreadyTaken());
     }
 
     @Test
     public void only_one_movie_can_be_scheduled_at_a_time() {
         // given a room with a scheduled movie
         var room = new Room(ROOM_ID, OPERATING_HOURS, CLEANING_TIME);
-        Assertions.assertThat(room.schedule(START_TIME, DURATION))
-                .containsOnly(new Room.MovieScheduled(ROOM_ID, START_TIME, DURATION));
+        Assertions.assertThat(room.schedule(MOVIE, START_TIME)).isEmpty();
 
         // then another movie cannot be scheduled at the same time
-        var events = room.schedule(START_TIME, DURATION);
-        Assertions.assertThat(events).containsOnly(new Room.MovieScheduleRejected(ROOM_ID, START_TIME, DURATION,
-                new Room.SlotAlreadyTaken()));
+        var veto = room.schedule(MOVIE, START_TIME);
+        Assertions.assertThat(veto).contains(new Room.SlotAlreadyTaken());
     }
 
     @RepeatedTest(100)
@@ -122,7 +113,7 @@ public class RoomTest {
         var planners = 256;
 
         // then only one planner can schedule the same time
-        var events = new ArrayBlockingQueue<Event>(planners);
+        var vetoes = new ArrayBlockingQueue<Optional<Policy.Veto>>(planners);
         try (var executor = Executors.newFixedThreadPool(planners)) {
             var barrier = new CountDownLatch(planners);
             for (int i = 0; i < planners; i++) {
@@ -130,7 +121,7 @@ public class RoomTest {
                     try {
                         barrier.countDown();
                         barrier.await();
-                        events.addAll(room.schedule(START_TIME, DURATION));
+                        vetoes.add(room.schedule(MOVIE, START_TIME));
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -138,6 +129,6 @@ public class RoomTest {
             }
         }
 
-        Assertions.assertThat(events).containsOnlyOnce(new Room.MovieScheduled(ROOM_ID, START_TIME, DURATION));
+        Assertions.assertThat(vetoes).containsOnlyOnce(Optional.empty());
     }
 }

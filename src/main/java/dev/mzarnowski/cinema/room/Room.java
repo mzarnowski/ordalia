@@ -1,7 +1,8 @@
 package dev.mzarnowski.cinema.room;
 
-import dev.mzarnowski.cinema.Event;
+import dev.mzarnowski.cinema.Movie;
 import dev.mzarnowski.cinema.OperatingHours;
+import dev.mzarnowski.cinema.screening.Policy;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Room {
@@ -25,21 +27,21 @@ public final class Room {
         this.cleaningTime = cleaningTime;
     }
 
-    public List<Event> schedule(ZonedDateTime start, Duration duration) {
-        var end = start.plus(duration);
+    public Optional<Policy.Veto> schedule(Movie movie, ZonedDateTime start) {
+        var end = start.plus(movie.duration());
 
         if (!start.toLocalDate().equals(end.toLocalDate())) {
             throw new IllegalArgumentException("");
         }
 
         if (!operatingHours.contains(start) || !operatingHours.contains(end)) {
-            return List.of(new MovieScheduleRejected(id, start, duration, new OutsideOperatingHours(operatingHours)));
+            return Optional.of(new OutsideOperatingHours(operatingHours));
         }
 
         if (claimTimeSlot(start, end.plus(cleaningTime))) {
-            return List.of(new MovieScheduled(id, start, duration));
+            return Optional.empty();
         } else {
-            return List.of(new MovieScheduleRejected(id, start, duration, new SlotAlreadyTaken()));
+            return Optional.of(new SlotAlreadyTaken());
         }
     }
 
@@ -55,16 +57,13 @@ public final class Room {
         return showings.add(new TimeSlot(start, end));
     }
 
+    public Id id() {
+        return id;
+    }
+
     public record Id(String value) {}
 
-    public record MovieScheduled(Id id, ZonedDateTime start, Duration duration) implements Event {}
+    public record OutsideOperatingHours(OperatingHours hours) implements Policy.Veto {}
 
-    public record MovieScheduleRejected(Id id, ZonedDateTime start, Duration duration,
-                                        Reason reason) implements Event {}
-
-    public sealed interface Reason {}
-
-    public record OutsideOperatingHours(OperatingHours hours) implements Reason {}
-
-    public record SlotAlreadyTaken() implements Reason {}
+    public record SlotAlreadyTaken() implements Policy.Veto {}
 }

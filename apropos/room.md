@@ -1,4 +1,4 @@
-# Room Schedule
+# Room
 - A room operates during a continuous block of time decided by the cinema.
 - room manages the movies it displays
 - No two shows can overlap the same period of time
