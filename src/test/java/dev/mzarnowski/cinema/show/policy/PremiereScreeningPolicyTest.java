@@ -1,8 +1,7 @@
 package dev.mzarnowski.cinema.show.policy;
 
-import dev.mzarnowski.cinema.Movie;
+import dev.mzarnowski.cinema.movie.Movie;
 import dev.mzarnowski.cinema.room.Room;
-import dev.mzarnowski.cinema.show.policy.PremiereShowPolicy;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,11 +9,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import static dev.mzarnowski.cinema.TestParsers.time;
 
 class PremiereScreeningPolicyTest {
-    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), Duration.ofMinutes(30));
+    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), Duration.ofMinutes(30), List.of());
     private static final Room.Id ROOM = new Room.Id("foo");
 
     @Test

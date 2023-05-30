@@ -1,6 +1,6 @@
 package dev.mzarnowski.cinema.show.policy;
 
-import dev.mzarnowski.cinema.Movie;
+import dev.mzarnowski.cinema.movie.Movie;
 import dev.mzarnowski.cinema.room.Room;
 import dev.mzarnowski.cinema.show.Policy;
 import dev.mzarnowski.cinema.show.policy.ShowDuringOperatingHoursPolicy.OutsideOperatingHours;
@@ -11,11 +11,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import static dev.mzarnowski.cinema.TestParsers.time;
 
 class ScreeningDuringOperatingHoursPolicyTest {
-    private final Movie MOVIE = new Movie(new Movie.Id("foo"), Duration.ofMinutes(30));
+    private final Movie MOVIE = new Movie(new Movie.Id("foo"), Duration.ofMinutes(30), List.of());
     private final Room.Id ROOM = new Room.Id("foo-bar");
     private final Policy policy = new ShowDuringOperatingHoursPolicy(time("08:00"), time("22:00"));
 

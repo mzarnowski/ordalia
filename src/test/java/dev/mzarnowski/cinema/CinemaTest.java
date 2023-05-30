@@ -1,5 +1,7 @@
 package dev.mzarnowski.cinema;
 
+import dev.mzarnowski.cinema.movie.Movie;
+import dev.mzarnowski.cinema.movie.MovieProvision;
 import dev.mzarnowski.cinema.room.Room;
 import dev.mzarnowski.cinema.show.Policy;
 import dev.mzarnowski.cinema.show.ShowRejected;
@@ -9,13 +11,15 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class CinemaTest {
-    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), Duration.ofMinutes(30));
+    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), Duration.ofMinutes(30),
+            List.of(new MovieProvision.Requires3DGlasses()));
 
     private static final Room.Id ROOM_ID = new Room.Id("foo");
 

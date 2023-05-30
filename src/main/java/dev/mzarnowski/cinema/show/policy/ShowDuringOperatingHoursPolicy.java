@@ -1,6 +1,6 @@
 package dev.mzarnowski.cinema.show.policy;
 
-import dev.mzarnowski.cinema.Movie;
+import dev.mzarnowski.cinema.movie.Movie;
 import dev.mzarnowski.cinema.room.Room;
 import dev.mzarnowski.cinema.show.Policy;
 

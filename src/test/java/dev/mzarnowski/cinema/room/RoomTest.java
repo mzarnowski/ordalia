@@ -1,6 +1,6 @@
 package dev.mzarnowski.cinema.room;
 
-import dev.mzarnowski.cinema.Movie;
+import dev.mzarnowski.cinema.movie.Movie;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -21,7 +22,7 @@ public class RoomTest {
     private static final ZonedDateTime START_TIME = ZonedDateTime.of(LocalDate.now(), time("08:00"), ZoneOffset.UTC);
     private static final Duration DURATION = Duration.of(30, ChronoUnit.MINUTES);
     private static final Duration CLEANING_TIME = Duration.of(10, ChronoUnit.MINUTES);
-    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), DURATION);
+    private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), DURATION, List.of());
     private static final TimeSlot EXPECTED_TIME_SLOT = new TimeSlot(START_TIME, START_TIME.plus(MOVIE.duration()).plus(CLEANING_TIME));
 
     @Test

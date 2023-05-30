@@ -1,6 +1,6 @@
 package dev.mzarnowski.cinema.room;
 
-import dev.mzarnowski.cinema.Movie;
+import dev.mzarnowski.cinema.movie.Movie;
 
 import java.time.Duration;
 import java.time.LocalDate;
