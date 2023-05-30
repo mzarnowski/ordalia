@@ -1,17 +1,18 @@
-package dev.mzarnowski.cinema.screening;
+package dev.mzarnowski.cinema.show.policy;
 
 import dev.mzarnowski.cinema.Movie;
 import dev.mzarnowski.cinema.room.Room;
+import dev.mzarnowski.cinema.show.Policy;
 
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-public class ScreeningDuringOperatingHoursPolicy implements Policy{
+public class ShowDuringOperatingHoursPolicy implements Policy {
     private final LocalTime opening;
     private final LocalTime closing;
 
-    public ScreeningDuringOperatingHoursPolicy(LocalTime opening, LocalTime closing) {
+    public ShowDuringOperatingHoursPolicy(LocalTime opening, LocalTime closing) {
         this.opening = opening;
         this.closing = closing;
     }

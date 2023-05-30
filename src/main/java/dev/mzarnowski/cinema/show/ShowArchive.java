@@ -1,7 +1,7 @@
-package dev.mzarnowski.cinema.screening;
+package dev.mzarnowski.cinema.show;
 
 import dev.mzarnowski.cinema.Movie;
 
-public interface ScreeningArchive {
+public interface ShowArchive {
     boolean contains(Movie.Id movie);
 }

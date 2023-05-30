@@ -1,8 +1,9 @@
 package dev.mzarnowski.cinema;
 
 import dev.mzarnowski.cinema.room.Room;
-import dev.mzarnowski.cinema.screening.Policy;
-import dev.mzarnowski.cinema.screening.ScreeningRejected;
+import dev.mzarnowski.cinema.show.Policy;
+import dev.mzarnowski.cinema.show.ShowScheduled;
+import dev.mzarnowski.cinema.show.ShowRejected;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -30,21 +31,21 @@ public class Cinema {
     }
 
     private Optional<Event> consultPolicy(Movie movie, Room.Id room, ZonedDateTime start){
-        return policy.verify(movie, room, start).map(veto -> screeningRejected(movie, room, start, veto));
+        return policy.verify(movie, room, start).map(veto -> showRejected(movie, room, start, veto));
     }
 
     private Event claimTimeSlot(Room room, Movie movie, ZonedDateTime start){
         return this.room.schedule(movie, start)
-                .map(it -> screeningScheduled(movie, room.id(), start))
-                .orElseGet(() -> screeningRejected(movie, room.id(), start, new SlotAlreadyTaken()));
+                .map(it -> showScheduled(movie, room.id(), start))
+                .orElseGet(() -> showRejected(movie, room.id(), start, new SlotAlreadyTaken()));
     }
 
-    private static Event screeningRejected(Movie movie, Room.Id room, ZonedDateTime start, Policy.Veto reason) {
-        return new ScreeningRejected(movie, room, start, reason);
+    private static Event showRejected(Movie movie, Room.Id room, ZonedDateTime start, Policy.Veto reason) {
+        return new ShowRejected(movie, room, start, reason);
     }
 
-    private static Event screeningScheduled(Movie movie, Room.Id room, ZonedDateTime start) {
-        return new ScreeningScheduled(movie, room, start);
+    private static Event showScheduled(Movie movie, Room.Id room, ZonedDateTime start) {
+        return new ShowScheduled(movie, room, start);
     }
 
     public record SlotAlreadyTaken() implements Policy.Veto {}
