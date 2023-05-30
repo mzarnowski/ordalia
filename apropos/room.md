@@ -10,6 +10,7 @@
 ### room always operates within the operating hours of the cinema
 #### Questions:
 - what, if there is e.g. a spillage or malfunction?
+### room either provides a claimed time slot, or nothing if slot is taken
 ### every day, room operates within the same hours
 ### cleaning team will be dispatched automatically, and without fail
 ### the outside world doesn't need to know how long cleaning will take

@@ -1,8 +1,6 @@
 package dev.mzarnowski.cinema.room;
 
 import dev.mzarnowski.cinema.Movie;
-import dev.mzarnowski.cinema.OperatingHours;
-import dev.mzarnowski.cinema.screening.Policy;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -24,30 +22,22 @@ public final class Room {
         this.cleaningTime = cleaningTime;
     }
 
-    public Optional<Policy.Veto> schedule(Movie movie, ZonedDateTime start) {
-        var end = start.plus(movie.duration());
+    public Optional<TimeSlot> schedule(Movie movie, ZonedDateTime start) {
+        var end = start.plus(movie.duration()).plus(cleaningTime);
 
-        if (!start.toLocalDate().equals(end.toLocalDate())) {
-            throw new IllegalArgumentException("");
-        }
-
-        if (claimTimeSlot(start, end.plus(cleaningTime))) {
-            return Optional.empty();
-        } else {
-            return Optional.of(new SlotAlreadyTaken());
-        }
-    }
-
-    private synchronized boolean claimTimeSlot(ZonedDateTime start, ZonedDateTime end) {
         var showings = this.showings.computeIfAbsent(start.toLocalDate(), date -> new ArrayList<>());
 
-        for (var block : showings) {
-            if (!(block.start().isAfter(end) || block.end().isBefore(start))) {
-                return false;
+        synchronized (this) {
+            for (var block : showings) {
+                if (!(block.start().isAfter(end) || block.end().isBefore(start))) {
+                    return Optional.empty();
+                }
             }
-        }
 
-        return showings.add(new TimeSlot(start, end));
+            TimeSlot slot = new TimeSlot(start, end);
+            showings.add(slot);
+            return Optional.of(slot);
+        }
     }
 
     public Id id() {
@@ -55,6 +45,4 @@ public final class Room {
     }
 
     public record Id(String value) {}
-
-    public record SlotAlreadyTaken() implements Policy.Veto {}
 }
