@@ -1,41 +1,61 @@
 package dev.mzarnowski.cinema;
 
 import dev.mzarnowski.cinema.room.Room;
-import dev.mzarnowski.cinema.screening.PremiereScreeningPolicy;
-import dev.mzarnowski.cinema.screening.ScreeningArchive;
+import dev.mzarnowski.cinema.screening.Policy;
 import dev.mzarnowski.cinema.screening.ScreeningRejected;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static dev.mzarnowski.cinema.TestParsers.time;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class CinemaTest {
     private static final Movie MOVIE = new Movie(new Movie.Id("foo-bar"), Duration.ofMinutes(30));
 
     private static final Room.Id ROOM_ID = new Room.Id("foo");
     private static final OperatingHours OPERATING_HOURS = new OperatingHours(time("08:00"), time("22:00"));
-    private static final Room ROOM = new Room(ROOM_ID, OPERATING_HOURS, Duration.ofMinutes(10));
-
-
-    private static final ScreeningArchive ONLY_PREMIERES = (movie) -> false;
 
     @Test
-    public void cannot_schedule_premiere_movie_too_early() {
-        // given a cinema
-        var premierePolicy = new PremiereScreeningPolicy(ONLY_PREMIERES, time("17:00"));
-        var cinema = new Cinema(premierePolicy, ROOM);
+    public void policy_veto_prevents_interactions_with_the_room() {
+        var policy = mock(Policy.class);
+        var veto = mock(Policy.Veto.class);
+        when(policy.verify(any(), any(), any())).thenReturn(Optional.of(veto));
 
-        // when scheduling a movie before premiere-screening-time-threshold
-        var start = ZonedDateTime.of(LocalDate.now(), time("16:59"), ZoneOffset.UTC);
+        var room = spy(new Room(ROOM_ID, OPERATING_HOURS, Duration.ofMinutes(10)));
+
+        var cinema = new Cinema(policy, room);
+
+        // when scheduling a movie
+        ZonedDateTime start = ZonedDateTime.now();
         var result = cinema.schedule(MOVIE, ROOM_ID, start);
 
-        // then the screening is vetoed
-        Assertions.assertThat(result).isEqualTo(new ScreeningRejected(MOVIE, ROOM_ID, start,
-                new PremiereScreeningPolicy.BeforePremiereScreeningTime(time("17:00"))));
+        // then policy is consulted before claiming the room time-slot
+        verify(policy, times(1)).verify(MOVIE, ROOM_ID, start);
+        verify(room, never()).schedule(any(), any());
+        Assertions.assertThat(result).isEqualTo(new ScreeningRejected(MOVIE, ROOM_ID, start, veto));
+    }
+
+    @Test
+    public void room_tries_to_schedule_a_movie_when_no_cinema_policy_vetoes() {
+        var policy = mock(Policy.class);
+        when(policy.verify(any(), any(), any())).thenReturn(Optional.empty());
+
+        var room = spy(new Room(ROOM_ID, OPERATING_HOURS, Duration.ofMinutes(10)));
+
+        var cinema = new Cinema(policy, room);
+
+        // when scheduling a movie
+        ZonedDateTime start = ZonedDateTime.now();
+        var result = cinema.schedule(MOVIE, ROOM_ID, start);
+
+        // then policy is consulted before claiming the room time-slot
+        verify(policy, times(1)).verify(MOVIE, ROOM_ID, start);
+        verify(room, times(1)).schedule(MOVIE, start);
+        Assertions.assertThat(result).isEqualTo(new ScreeningScheduled(MOVIE, ROOM_ID, start));
     }
 }
