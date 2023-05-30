@@ -26,7 +26,7 @@ public class CinemaTest {
         var veto = mock(Policy.Veto.class);
         when(policy.verify(any(), any(), any())).thenReturn(Optional.of(veto));
 
-        var room = spy(new Room(ROOM_ID, OPERATING_HOURS, Duration.ofMinutes(10)));
+        var room = spy(new Room(ROOM_ID, Duration.ofMinutes(10)));
 
         var cinema = new Cinema(policy, room);
 
@@ -45,7 +45,7 @@ public class CinemaTest {
         var policy = mock(Policy.class);
         when(policy.verify(any(), any(), any())).thenReturn(Optional.empty());
 
-        var room = spy(new Room(ROOM_ID, OPERATING_HOURS, Duration.ofMinutes(10)));
+        var room = spy(new Room(ROOM_ID, Duration.ofMinutes(10)));
 
         var cinema = new Cinema(policy, room);
 

@@ -15,15 +15,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Room {
     private final Id id;
-    // embedding the operating hours here means these are the same every day
-    private final OperatingHours operatingHours;
     private final Duration cleaningTime;
 
     private final Map<LocalDate, List<TimeSlot>> showings = new ConcurrentHashMap<>();
 
-    public Room(Id id, OperatingHours operatingHours, Duration cleaningTime) {
+    public Room(Id id, Duration cleaningTime) {
         this.id = id;
-        this.operatingHours = operatingHours;
         this.cleaningTime = cleaningTime;
     }
 
@@ -32,10 +29,6 @@ public final class Room {
 
         if (!start.toLocalDate().equals(end.toLocalDate())) {
             throw new IllegalArgumentException("");
-        }
-
-        if (!operatingHours.contains(start) || !operatingHours.contains(end)) {
-            return Optional.of(new OutsideOperatingHours(operatingHours));
         }
 
         if (claimTimeSlot(start, end.plus(cleaningTime))) {
@@ -62,8 +55,6 @@ public final class Room {
     }
 
     public record Id(String value) {}
-
-    public record OutsideOperatingHours(OperatingHours hours) implements Policy.Veto {}
 
     public record SlotAlreadyTaken() implements Policy.Veto {}
 }

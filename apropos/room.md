@@ -7,12 +7,10 @@
 - a room maintains its availability
 
 ## Assumptions:
-### the operating hours are a continuous block of time
-### every day, room operates within the same hours
-### the operating hours cannot be changed
+### room always operates within the operating hours of the cinema
 #### Questions:
 - what, if there is e.g. a spillage or malfunction?
-### cleaning can be done after operating hours
+### every day, room operates within the same hours
 ### cleaning team will be dispatched automatically, and without fail
 ### the outside world doesn't need to know how long cleaning will take
 Hence, the outgoing event will not contain this information, only the duration of the movie.
@@ -20,7 +18,6 @@ The room will still track this time, it will simply not expose it outside.
 ### we don't need to track which movie is scheduled at which time
 Reason: there is no way to edit the schedule (yet).
 Since we are emitting MovieScheduled events, it is easy to build state from those at a later time if needed.
-### we don't plan to support overnight movies (i.e. also extending the operating hours)
 ### there are not many movies "in flight" at once
 Even assuming we would try to schedule an entire month at once, when with a movie taking 30 minutes and we operate 24/7, this tops at 31 * 24 * 2 (= 1500) concurrent requests.
 
