@@ -87,6 +87,22 @@ public class RoomTest {
     }
 
     @Test
+    public void movie_cannot_start_when_the_room_is_being_cleaned() {
+        // given a room with movie scheduled
+        var room = new Room(ROOM_ID, OPERATING_HOURS, CLEANING_TIME);
+        Assertions.assertThat(room.schedule(START_TIME, DURATION))
+                .containsOnly(new Room.MovieScheduled(ROOM_ID, START_TIME, DURATION));
+
+        // when trying to schedule a movie when the room is being cleaned after the previous show
+        var offendingStartTime = START_TIME.plus(DURATION).plusMinutes(1);
+        var events = room.schedule(offendingStartTime, DURATION);
+
+        // then scheduling fails
+        Assertions.assertThat(events)
+                .containsOnly(new Room.MovieScheduleRejected(ROOM_ID, offendingStartTime, DURATION, new Room.SlotAlreadyTaken()));
+    }
+
+    @Test
     public void only_one_movie_can_be_scheduled_at_a_time() {
         // given a room with a scheduled movie
         var room = new Room(ROOM_ID, OPERATING_HOURS, CLEANING_TIME);

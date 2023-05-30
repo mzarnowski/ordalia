@@ -9,4 +9,8 @@ public final class TestParsers {
         var untilTime = LocalTime.parse(until);
         return new OperatingHours(sinceTime, untilTime);
     }
+
+    public static LocalTime time(String value){
+        return LocalTime.parse(value);
+    }
 }
