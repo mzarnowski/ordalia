@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "dev.mzarnowski.courses"
+group = "dev.mzarnowski.wikimedia"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -10,18 +10,10 @@ repositories {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
-    implementation("org.apache.kafka:kafka-clients:3.4.0")
-    implementation("org.slf4j:slf4j-api:2.0.7")
-    implementation("org.slf4j:slf4j-simple:2.0.7")
-
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     // https://mvnrepository.com/artifact/com.launchdarkly/okhttp-eventsource
     implementation("com.launchdarkly:okhttp-eventsource:4.1.0")
-
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 tasks.test {
