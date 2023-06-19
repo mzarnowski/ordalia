@@ -1,5 +1,8 @@
 package dev.mzarnowski.cron;
 
+import java.text.StringCharacterIterator;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
 public class ScheduleParser {
@@ -11,43 +14,57 @@ public class ScheduleParser {
     }
 
     private static int[] parseMinutes(String segment) {
-        var stepOffset = segment.lastIndexOf('/');
-        var step = stepOffset < 0 ? 1 : parse(segment, stepOffset + 1, segment.length());
+        var iterator = new StringCharacterIterator(segment);
+        var tokenizer = new Tokenizer(iterator);
 
-        if (segment.startsWith("*")) {
-            if ((stepOffset < 0 && segment.length() == 1) || stepOffset == 1)
-                return IntStream.iterate(0, (it) -> it < 60, (it) -> it + step).toArray();
-            else throw new ParseException("Invalid step pattern: " + segment);
+        if (tokenizer.skip('*')) {
+            return parseWildcard(tokenizer);
         }
 
-        var rangeOffset = segment.indexOf('-', 1);
+        var start = tokenizer.number();
 
-        var start = parse(segment, 0, rangeOffset < 0 ? stepOffset : rangeOffset);
-        int end = parseRangeOffset(segment, stepOffset, rangeOffset, start);
-        return IntStream.iterate(start, (it) -> it < end, (it) -> it + step).toArray();
+        var end = -1;
+        if (tokenizer.skip('-')) {
+            end = tokenizer.number();
+        }
+
+        var step = -1;
+        if (tokenizer.skip('/')) {
+            step = tokenizer.number();
+            if (end == -1) end = 59;
+        }
+
+        if (end == -1) end = start;
+        if (step == -1) step = 1;
+
+        if (!tokenizer.eol()) {
+            throw new ParseException("Could not parse fully: " + segment);
+        }
+
+        if (start < 0 || start > 59) {
+            throw new ParseException("Invalid value: " + step);
+        }
+
+        if (end < 0 || end > 59) {
+            throw new ParseException("Invalid value: " + step);
+        }
+
+        return enumerate(start, end + 1, step);
     }
 
-    private static int parseRangeOffset(String segment, int stepOffset, int range, int start) {
-        if (0 <= range) {
-            return parse(segment, range + 1, stepOffset);
-        } else if (0 <= stepOffset) {
-            return 59;
+    private static int[] parseWildcard(Tokenizer tokenizer) {
+        if (tokenizer.eol()) return enumerate(0, 60, 1);
+        else if (tokenizer.skip('/')) {
+            var token = tokenizer.takeWhile(Character::isDigit);
+            if (token == null) throw new ParseException("Missing step specification");
+            return enumerate(0, 60, Integer.parseInt(token));
         } else {
-            return start;
+            throw new ParseException("Unsupported wildcard: [%s] != */\\d+");
         }
     }
 
-    private static int parse(String segment, int offset, int limit) {
-        try {
-            var value = Integer.parseInt(segment, offset, limit < 0 ? segment.length() : limit, 10);
-            if (0 <= value && value < 60) {
-                return value;
-            } else {
-                var error = String.format("value %s out of minute bounds: [%s, %s)", value, 0, 60);
-                throw new ParseException(error);
-            }
-        } catch (NumberFormatException e) {
-            throw new ParseException(e);
-        }
+    private static int[] enumerate(int start, int end, int step) {
+        if (step == 1) return IntStream.range(start, end).toArray();
+        return IntStream.iterate(start, (it) -> it < end, (it) -> it + step).toArray();
     }
 }

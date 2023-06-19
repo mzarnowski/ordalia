@@ -77,5 +77,6 @@ class ScheduleParserTest {
         assertThrows(ParseException.class, () -> parse("/* * * * * foo"));
         assertThrows(ParseException.class, () -> parse("-1 * * * * foo"));
         assertThrows(ParseException.class, () -> parse("60 * * * * foo"));
+        assertThrows(ParseException.class, () -> parse("1a * * * * foo"));
     }
 }
