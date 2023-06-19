@@ -1,3 +1,6 @@
 package dev.mzarnowski.cron;
 
-public record Schedule(String command) {}
+
+public record Schedule(String command, int[] minutes) {
+
+}
