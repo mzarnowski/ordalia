@@ -1,8 +1,6 @@
 package dev.mzarnowski.cron;
 
 import java.text.CharacterIterator;
-import java.time.temporal.ChronoField;
-import java.util.LinkedList;
 import java.util.function.IntPredicate;
 
 public class Tokenizer {

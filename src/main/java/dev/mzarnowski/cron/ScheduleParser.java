@@ -11,62 +11,62 @@ public class ScheduleParser {
         var segments = string.split("\\h+");
 
         return new Schedule(segments[5], Map.of(
-                MINUTE_OF_HOUR, parse(0, 59, segments[0]),
-                HOUR_OF_DAY, parse(0, 23, segments[1]),
-                DAY_OF_MONTH, parse(1, 31, segments[2]),
-                MONTH_OF_YEAR, parse(1, 12, segments[3]),
-                DAY_OF_WEEK, parse(0, 23, segments[4])
+                MINUTE_OF_HOUR, parseField(FieldFormat.MINUTE, segments[0]),
+                HOUR_OF_DAY, parseField(FieldFormat.HOUR, segments[1]),
+                DAY_OF_MONTH, parseField(FieldFormat.DAY_OF_MONTH, segments[2]),
+                MONTH_OF_YEAR, parseField(FieldFormat.MONTH, segments[3]),
+                DAY_OF_WEEK, parseField(FieldFormat.DAY_OF_WEEK, segments[4])
         ));
     }
 
-    private static int[] parse(int min, int max, String segment) {
+    static int[] parseField(FieldFormat format, String segment) {
         var iterator = new StringCharacterIterator(segment);
         var tokenizer = new Tokenizer(iterator);
 
         if (tokenizer.skip('*')) {
-            return parseWildcard(min, max, tokenizer);
+            return parseWildcard(format, tokenizer);
         }
 
-        var start = tokenizer.number();
+        var first = tokenizer.number();
 
-        var end = -1;
+        var last = -1;
         if (tokenizer.skip('-')) {
-            end = tokenizer.number();
+            last = tokenizer.number();
         }
 
-        var step = -1;
+        var interval = -1;
         if (tokenizer.skip('/')) {
-            step = tokenizer.number();
-            if (end == -1) end = max;
+            interval = tokenizer.number();
+            if (last == -1) last = format.max();
         }
 
-        if (end == -1) end = start;
-        if (step == -1) step = 1;
+        if (last == -1) last = first;
+        if (interval == -1) interval = 1;
 
         if (!tokenizer.eol()) {
             throw new ParseException("Could not parse fully: " + segment);
         }
 
-        if (start < min || start > max) {
-            throw new ParseException("Invalid value: " + step);
+        if (first < format.min() || first > format.max()) {
+            throw new ParseException("Invalid value: " + interval);
         }
 
-        if (end < min || end > max) {
-            throw new ParseException("Invalid value: " + step);
+        if (last < format.min() || last > format.max()) {
+            throw new ParseException("Invalid value: " + interval);
         }
 
-        if (end < start) {
-            throw new ParseException(String.format("Invalid range: %d < %d", start, end));
+        if (last < first) {
+            throw new ParseException(String.format("Invalid range: %d < %d", first, last));
         }
 
-        return enumerate(start, end, step);
+        return enumerate(first, last, interval);
     }
 
-    private static int[] parseWildcard(int min, int max, Tokenizer tokenizer) {
-        if (tokenizer.eol()) return enumerate(min, max, 1);
+    private static int[] parseWildcard(FieldFormat format, Tokenizer tokenizer) {
+        if (tokenizer.eol()) return enumerate(format.min(), format.max(), 1);
         else if (tokenizer.skip('/')) {
-            var step = tokenizer.number();
-            return enumerate(min, max, step);
+            var interval = tokenizer.number();
+            return enumerate(format.min(), format.max(), interval);
         } else {
             throw new ParseException("Unsupported wildcard: [%s] != */\\d+");
         }
