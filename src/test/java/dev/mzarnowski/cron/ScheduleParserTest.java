@@ -72,6 +72,7 @@ class ScheduleParserTest {
 
     @Test
     void cannot_parse_invalid_minutes() {
+        assertThrows(ParseException.class, () -> parse("10-5 * * * * foo"));
         assertThrows(ParseException.class, () -> parse("*-1 * * * * foo"));
         assertThrows(ParseException.class, () -> parse("*/ * * * * foo"));
         assertThrows(ParseException.class, () -> parse("/* * * * * foo"));

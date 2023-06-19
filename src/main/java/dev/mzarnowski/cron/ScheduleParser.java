@@ -49,6 +49,10 @@ public class ScheduleParser {
             throw new ParseException("Invalid value: " + step);
         }
 
+        if (end < start) {
+            throw new ParseException(String.format("Invalid range: %d < %d", start, end));
+        }
+
         return enumerate(start, end + 1, step);
     }
 
