@@ -16,6 +16,12 @@ public class ScheduleParser {
         }
 
         var value = Integer.parseInt(segment, 10);
-        return new int[] { value };
+        if (0 <= value && value < 60) {
+            return new int[]{value};
+        } else {
+            var error = String.format("value %s out of minute bounds: [%s, %s)", value, 0, 60);
+            throw new ParseException(error);
+        }
     }
+
 }
