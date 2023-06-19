@@ -46,7 +46,35 @@ class ScheduleParserTest {
     }
 
     @Test
+    void parse_minute_wildcard_step() {
+        var string = "*/15 * * * * /usr/bin/find";
+
+        var schedule = parse(string);
+
+        assertArrayEquals(new int[] {0, 15, 30, 45}, schedule.minutes());
+    }
+    @Test
+    void parse_minute_explicit_range_step() {
+        var string = "11-40/15 * * * * /usr/bin/find";
+
+        var schedule = parse(string);
+
+        assertArrayEquals(new int[] {11, 26}, schedule.minutes());
+    }
+    @Test
+    void parse_minute_implicit_range_step() {
+        var string = "11/15 * * * * /usr/bin/find";
+
+        var schedule = parse(string);
+
+        assertArrayEquals(new int[] {11, 26, 41, 56}, schedule.minutes());
+    }
+
+    @Test
     void cannot_parse_invalid_minutes() {
+        assertThrows(ParseException.class, () -> parse("*-1 * * * * foo"));
+        assertThrows(ParseException.class, () -> parse("*/ * * * * foo"));
+        assertThrows(ParseException.class, () -> parse("/* * * * * foo"));
         assertThrows(ParseException.class, () -> parse("-1 * * * * foo"));
         assertThrows(ParseException.class, () -> parse("60 * * * * foo"));
     }
