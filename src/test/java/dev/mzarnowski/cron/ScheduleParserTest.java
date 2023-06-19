@@ -28,4 +28,13 @@ class ScheduleParserTest {
 
         assertArrayEquals(IntStream.range(0, 60).toArray(), schedule.minutes());
     }
+
+    @Test
+    void parse_minute_value() {
+        var string = "21 * * * * /usr/bin/find";
+
+        var schedule = ScheduleParser.parse(string);
+
+        assertArrayEquals(new int[] {21}, schedule.minutes());
+    }
 }

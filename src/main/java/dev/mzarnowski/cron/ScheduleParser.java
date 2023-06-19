@@ -14,6 +14,8 @@ public class ScheduleParser {
         if (segment.equals("*")) {
             return IntStream.range(0, 60).toArray();
         }
-        return new int[0];
+
+        var value = Integer.parseInt(segment, 10);
+        return new int[] { value };
     }
 }
