@@ -15,9 +15,17 @@ public class ScheduleParser {
             return IntStream.range(0, 60).toArray();
         }
 
-        var value = Integer.parseInt(segment, 10);
+        var range = segment.indexOf('-', 1);
+
+        var start = parse(segment, 0, range);
+        var end = parse(segment, range + 1, segment.length());
+        return IntStream.range(start, end + 1).toArray();
+    }
+
+    private static int parse(String segment, int offset, int limit) {
+        var value = Integer.parseInt(segment, offset, limit < 0 ? segment.length() : limit, 10);
         if (0 <= value && value < 60) {
-            return new int[]{value};
+            return value;
         } else {
             var error = String.format("value %s out of minute bounds: [%s, %s)", value, 0, 60);
             throw new ParseException(error);

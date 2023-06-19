@@ -28,6 +28,15 @@ class ScheduleParserTest {
     }
 
     @Test
+    void parse_minute_range() {
+        var string = "21-43 * * * * /usr/bin/find";
+
+        var schedule = parse(string);
+
+        assertArrayEquals(IntStream.range(21, 44).toArray(), schedule.minutes());
+    }
+
+    @Test
     void parse_minute_value() {
         var string = "21 * * * * /usr/bin/find";
 
