@@ -2,7 +2,10 @@ package dev.mzarnowski.cron;
 
 import java.text.StringCharacterIterator;
 import java.util.Map;
+import java.util.OptionalInt;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoField.*;
 
@@ -27,11 +30,11 @@ public class ScheduleParser {
             return parseWildcard(format, tokenizer);
         }
 
-        var first = tokenizer.number();
+        var first = parseValue(format, tokenizer);
 
         var last = -1;
         if (tokenizer.skip('-')) {
-            last = tokenizer.number();
+            last = parseValue(format, tokenizer);
         }
 
         var interval = -1;
@@ -62,6 +65,39 @@ public class ScheduleParser {
         return enumerate(first, last, interval);
     }
 
+    private static int parseValue(FieldFormat format, Tokenizer tokenizer) {
+        return Stream.<Parser>of(() -> parseInteger(tokenizer), () -> parseMnemonic(format, tokenizer))
+                .flatMapToInt(it -> it.get().stream())
+                .findFirst()
+                .orElseThrow(() -> new ParseException("Value not present"));
+    }
+
+    private static OptionalInt parseInteger(Tokenizer tokenizer) {
+        var token = tokenizer.takeWhile(Character::isDigit);
+        if (token == null) return OptionalInt.empty();
+
+        try {
+            int value = Integer.parseInt(token);
+            return OptionalInt.of(value);
+        } catch (NumberFormatException e) {
+            throw new ParseException(e);
+        }
+    }
+
+    private static OptionalInt parseMnemonic(FieldFormat format, Tokenizer tokenizer) {
+        var token = tokenizer.takeWhile(Character::isAlphabetic);
+        if (token == null) return OptionalInt.empty();
+
+        var mnemonics = format.mnemonics();
+        for (int i = 0; i < mnemonics.length; i++) {
+            if (token.equalsIgnoreCase(mnemonics[i])) {
+                return OptionalInt.of(format.min() + i);
+            }
+        }
+
+        throw new ParseException("Invalid token: " + token);
+    }
+
     private static int[] parseWildcard(FieldFormat format, Tokenizer tokenizer) {
         if (tokenizer.eol()) return enumerate(format.min(), format.max(), 1);
         else if (tokenizer.skip('/')) {
@@ -75,5 +111,9 @@ public class ScheduleParser {
     private static int[] enumerate(int start, int end, int step) {
         if (step == 1) return IntStream.range(start, end + 1).toArray();
         return IntStream.iterate(start, (it) -> it < end + 1, (it) -> it + step).toArray();
+    }
+
+    @FunctionalInterface
+    private interface Parser extends Supplier<OptionalInt> {
     }
 }

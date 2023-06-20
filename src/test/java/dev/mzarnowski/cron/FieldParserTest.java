@@ -15,7 +15,7 @@ import static java.util.function.Function.identity;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class FieldParserTest {
-    public static final FieldFormat RANGE_FORMAT = FieldFormat.of(4, 4);
+    public static final FieldFormat RANGE_FORMAT = FieldFormat.of(4, "a", "b", "c", "d");
 
     @ParameterizedTest(name = "{0}")
     @ArgumentsSource(FieldFormatSpec.class)
@@ -39,8 +39,10 @@ class FieldParserTest {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
             Stream<Stream<Arguments>> specs = Stream.of(
-                    singleValues(), offsetIntervals(),
-                    valueRanges(), rangeIntervals(),
+                    singleValues(), singleMnemonic(),
+                    offsetIntervals(), mnemonicOffsetIntervals(),
+                    valueRanges(), mnemonicRanges(),
+                    rangeIntervals(), mnemonicRangeIntervals(),
                     wildcard(), wildcardIntervals());
 
             return specs.flatMap(identity());
@@ -55,6 +57,19 @@ class FieldParserTest {
             );
         }
 
+        private Stream<Arguments> singleMnemonic() {
+            return Stream.of(
+                    spec("A", 4),
+                    spec("B", 5),
+                    spec("C", 6),
+                    spec("D", 7),
+                    spec("a", 4),
+                    spec("b", 5),
+                    spec("c", 6),
+                    spec("d", 7)
+            );
+        }
+
         private Stream<Arguments> valueRanges() {
             return Stream.of(
                     spec("4-5", 4, 5),
@@ -63,12 +78,20 @@ class FieldParserTest {
             );
         }
 
+        private Stream<Arguments> mnemonicRanges() {
+            return Stream.of(
+                    spec("A-B", 4, 5),
+                    spec("A-D", 4, 5, 6, 7),
+                    spec("a-D", 4, 5, 6, 7),
+                    spec("C-C", 6)
+            );
+        }
+
         private Stream<Arguments> wildcard() {
             return Stream.of(
                     spec("*", 4, 5, 6, 7)
             );
         }
-
 
         private Stream<Arguments> offsetIntervals() {
             return Stream.of(
@@ -79,12 +102,30 @@ class FieldParserTest {
             );
         }
 
+        private Stream<Arguments> mnemonicOffsetIntervals() {
+            return Stream.of(
+                    spec("A/1", 4, 5, 6, 7),
+                    spec("A/2", 4, 6),
+                    spec("A/3", 4, 7),
+                    spec("A/4", 4)
+            );
+        }
+
         private Stream<Arguments> rangeIntervals() {
             return Stream.of(
                     spec("4-6/1", 4, 5, 6),
                     spec("4-6/2", 4, 6),
                     spec("4-6/3", 4),
-                    spec("4/4", 4)
+                    spec("4-6/4", 4)
+            );
+        }
+
+        private Stream<Arguments> mnemonicRangeIntervals() {
+            return Stream.of(
+                    spec("A-C/1", 4, 5, 6),
+                    spec("A-C/2", 4, 6),
+                    spec("A-C/3", 4),
+                    spec("A-C/4", 4)
             );
         }
 
@@ -106,8 +147,11 @@ class FieldParserTest {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
             var streams = Stream.of(
-                    invalidValues(), invalidRanges(), invalidWildcards(),
-                    invalidValueIntervals(), invalidRangeIntervals());
+                    invalidValues(), invalidMnemonicValues(),
+                    invalidRanges(), invalidMnemonicRanges(),
+                    invalidWildcards(),
+                    invalidValueIntervals(), invalidMnemonicValueIntervals(),
+                    invalidRangeIntervals(), invalidMnemonicRangeIntervals());
 
             return streams.flatMap(identity());
         }
@@ -116,11 +160,19 @@ class FieldParserTest {
             return examples("1", "-1", "3", "8", "100");
         }
 
+        private Stream<Arguments> invalidMnemonicValues() {
+            return examples("foo", "E");
+        }
+
         private Stream<Arguments> invalidRanges() {
             return examples(
                     "4-8", "3-7", "1-3", "1-5", "5-10", "9-10",
                     "5-", "-6", "-", "4a-5b", "a5-a6"
             );
+        }
+
+        private Stream<Arguments> invalidMnemonicRanges() {
+            return examples("B-A", "foo-B", "A-X", "X-Y", "4-X", "X-6");
         }
 
         private Stream<Arguments> invalidWildcards() {
@@ -134,9 +186,16 @@ class FieldParserTest {
             return examples("4/*", "4/", "4/a", "a/a", "5/a");
         }
 
+        private Stream<Arguments> invalidMnemonicValueIntervals() {
+            return examples("A/*", "A/", "4/A", "A/A", "5/A");
+        }
+
         private Stream<Arguments> invalidRangeIntervals() {
             return examples("4-5/", "4-5/a", "4-5/*");
         }
 
+        private Stream<Arguments> invalidMnemonicRangeIntervals() {
+            return examples("A-B/", "4-5/A");
+        }
     }
 }
