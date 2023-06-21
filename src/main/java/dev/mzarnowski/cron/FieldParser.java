@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class FieldParser {
+public final class FieldParser {
     public int[] parseField(FieldFormat format, String segment) {
         var iterator = new StringCharacterIterator(segment);
         var tokenizer = new Tokenizer(iterator);
