@@ -1,28 +1,13 @@
 package dev.mzarnowski.cron;
 
 import java.text.StringCharacterIterator;
-import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.time.temporal.ChronoField.*;
-
-public class ScheduleParser {
-    public static Schedule parse(String string) {
-        var segments = string.split("\\h+");
-
-        return new Schedule(segments[5], Map.of(
-                MINUTE_OF_HOUR, parseField(FieldFormat.MINUTE, segments[0]),
-                HOUR_OF_DAY, parseField(FieldFormat.HOUR, segments[1]),
-                DAY_OF_MONTH, parseField(FieldFormat.DAY_OF_MONTH, segments[2]),
-                MONTH_OF_YEAR, parseField(FieldFormat.MONTH, segments[3]),
-                DAY_OF_WEEK, parseField(FieldFormat.DAY_OF_WEEK, segments[4])
-        ));
-    }
-
-    static int[] parseField(FieldFormat format, String segment) {
+public class FieldParser {
+    public int[] parseField(FieldFormat format, String segment) {
         var iterator = new StringCharacterIterator(segment);
         var tokenizer = new Tokenizer(iterator);
 
@@ -89,8 +74,8 @@ public class ScheduleParser {
         if (token == null) return OptionalInt.empty();
 
         var mnemonics = format.mnemonics();
-        for (int i = 0; i < mnemonics.length; i++) {
-            if (token.equalsIgnoreCase(mnemonics[i])) {
+        for (int i = 0; i < mnemonics.size(); i++) {
+            if (token.equalsIgnoreCase(mnemonics.get(i))) {
                 return OptionalInt.of(format.min() + i);
             }
         }

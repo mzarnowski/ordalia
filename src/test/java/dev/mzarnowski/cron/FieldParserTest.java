@@ -8,27 +8,28 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static dev.mzarnowski.cron.ScheduleParser.parseField;
 import static java.util.function.Function.identity;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class FieldParserTest {
-    public static final FieldFormat RANGE_FORMAT = FieldFormat.of(4, "a", "b", "c", "d");
+    private static final FieldFormat FORMAT = new DummyFieldFormat(4, 7, List.of("a", "b", "c", "d"));
+    private final FieldParser parser = new FieldParser();
 
     @ParameterizedTest(name = "{0}")
     @ArgumentsSource(FieldFormatSpec.class)
     public void parses_valid_expression(String expression, int[] expected) {
-        var parsed = parseField(RANGE_FORMAT, expression);
+        var parsed = parser.parseField(FORMAT, expression);
 
         Assertions.assertArrayEquals(expected, parsed);
     }
 
     @ParameterizedTest(name = "{0}")
     @ArgumentsSource(InvalidFieldExpressionExamples.class)
-    public void does_not_parse_single_value_out_of_bounds(String expression) {
-        Assertions.assertThrows(ParseException.class, () -> parseField(RANGE_FORMAT, expression));
+    public void does_not_parse_invalid_expressions(String expression) {
+        Assertions.assertThrows(ParseException.class, () -> parser.parseField(FORMAT, expression));
     }
 
     static class FieldFormatSpec implements ArgumentsProvider {
@@ -197,5 +198,8 @@ class FieldParserTest {
         private Stream<Arguments> invalidMnemonicRangeIntervals() {
             return examples("A-B/", "4-5/A");
         }
+    }
+
+    private record DummyFieldFormat(int min, int max, List<String> mnemonics) implements FieldFormat {
     }
 }
