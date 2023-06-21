@@ -1,33 +1,23 @@
 package dev.mzarnowski.cron;
 
 
-import java.time.temporal.ChronoField;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.IntStream;
 
-public record Schedule(String command, Map<ChronoField, int[]> components) {
-    public IntStream minutes(){
-        return stream(ChronoField.MINUTE_OF_HOUR);
+public record Schedule(String command, Map<Component, int[]> components) {
+    public static Schedule parse(String expression) {
+        var parser = CronExpressionParser.create();
+        return parser.parse(expression);
     }
-    public IntStream hours(){
-        return stream(ChronoField.HOUR_OF_DAY);
-    }
+    public enum Component {
+        MINUTE_OF_HOUR(CronFieldFormat.MINUTE_OF_HOUR),
+        HOUR_OF_DAY(CronFieldFormat.HOUR_OF_DAY),
+        DAY_OF_WEEK(CronFieldFormat.DAY_OF_WEEK),
+        DAY_OF_MONTH(CronFieldFormat.DAY_OF_MONTH),
+        MONTH_OF_YEAR(CronFieldFormat.MONTH_OF_YEAR);
+        final CronFieldFormat format;
 
-    public IntStream daysOfMonth() {
-        return stream(ChronoField.DAY_OF_MONTH);
+        Component(CronFieldFormat format) {
+            this.format = format;
+        }
     }
-
-    public IntStream daysOfWeek() {
-        return stream(ChronoField.DAY_OF_WEEK);
-    }
-
-    public IntStream months(){
-        return stream(ChronoField.MONTH_OF_YEAR);
-    }
-
-    private IntStream stream(ChronoField field) {
-        return Arrays.stream(components.getOrDefault(field, new int[0]));
-    }
-
 }

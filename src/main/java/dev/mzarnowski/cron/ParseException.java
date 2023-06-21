@@ -5,7 +5,7 @@ final class ParseException extends RuntimeException {
         super(message);
     }
 
-    public ParseException(Exception cause) {
+    ParseException(Exception cause) {
         super(cause);
     }
 }

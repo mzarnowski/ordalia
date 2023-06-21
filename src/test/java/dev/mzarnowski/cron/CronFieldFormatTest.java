@@ -17,14 +17,6 @@ import static java.util.stream.IntStream.rangeClosed;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class CronFieldFormatTest {
-    private static final Map<FieldFormat, Integer> FIELD_POSITION = Map.of(
-            CronFieldFormat.MINUTE, 0,
-            CronFieldFormat.HOUR, 1,
-            CronFieldFormat.DAY_OF_MONTH, 2,
-            CronFieldFormat.MONTH, 3,
-            CronFieldFormat.DAY_OF_WEEK, 4
-    );
-
     @ParameterizedTest(name = "{0} - {1}")
     @ArgumentsSource(CronExpressionTestCases.class)
     public void parse_cron_field(FieldFormat format, String expression, int... expressed) {
@@ -61,8 +53,8 @@ public class CronFieldFormatTest {
     }
 
     public static final Map<CronFieldFormat, CronFieldFormatSpec> VALUES = Map.of(
-            CronFieldFormat.MINUTE, spec(range(0, 60), Map.of()),
-            CronFieldFormat.HOUR, spec(range(0, 24), Map.of()),
+            CronFieldFormat.MINUTE_OF_HOUR, spec(range(0, 60), Map.of()),
+            CronFieldFormat.HOUR_OF_DAY, spec(range(0, 24), Map.of()),
             CronFieldFormat.DAY_OF_MONTH, spec(rangeClosed(1, 31), Map.of()),
             CronFieldFormat.DAY_OF_WEEK, spec(rangeClosed(0, 6), Map.ofEntries(
                     mnemonic("MON", 1),
@@ -72,7 +64,7 @@ public class CronFieldFormatTest {
                     mnemonic("FRI", 5),
                     mnemonic("SAT", 6),
                     mnemonic("SUN", 0))),
-            CronFieldFormat.MONTH, spec(rangeClosed(1, 12), Map.ofEntries(
+            CronFieldFormat.MONTH_OF_YEAR, spec(rangeClosed(1, 12), Map.ofEntries(
                     mnemonic("JAN", 1),
                     mnemonic("FEB", 2),
                     mnemonic("MAR", 3),

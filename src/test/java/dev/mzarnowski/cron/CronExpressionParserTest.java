@@ -22,10 +22,10 @@ class CronExpressionParserTest {
         var schedule = parser.parse(expression);
 
         Assertions.assertEquals("foo bar baz", schedule.command());
-        Mockito.verify(fieldParser, times(1)).parseField(MINUTE, "minute");
-        Mockito.verify(fieldParser, times(1)).parseField(HOUR, "hour");
+        Mockito.verify(fieldParser, times(1)).parseField(MINUTE_OF_HOUR, "minute");
+        Mockito.verify(fieldParser, times(1)).parseField(HOUR_OF_DAY, "hour");
         Mockito.verify(fieldParser, times(1)).parseField(DAY_OF_MONTH, "dayofmonth");
-        Mockito.verify(fieldParser, times(1)).parseField(MONTH, "month");
+        Mockito.verify(fieldParser, times(1)).parseField(MONTH_OF_YEAR, "month");
         Mockito.verify(fieldParser, times(1)).parseField(DAY_OF_WEEK, "dayofweek");
         verifyNoMoreInteractions(fieldParser);
     }

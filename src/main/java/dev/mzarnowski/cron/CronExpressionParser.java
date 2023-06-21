@@ -1,16 +1,18 @@
 package dev.mzarnowski.cron;
 
-import java.time.temporal.ChronoField;
+import dev.mzarnowski.cron.Schedule.Component;
+
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.time.temporal.ChronoField.*;
+import static dev.mzarnowski.cron.Schedule.Component.*;
 
-public class CronExpressionParser {
+final class CronExpressionParser {
     private final FieldParser parser;
 
-    public static CronExpressionParser create(){
+    static CronExpressionParser create() {
         return new CronExpressionParser(new FieldParser());
     }
 
@@ -18,23 +20,28 @@ public class CronExpressionParser {
         this.parser = parser;
     }
 
-    public Schedule parse(String expression) {
+    Schedule parse(String expression) {
         var segments = expression.split("\\h+");
 
-        return new Schedule(parseCommand(segments), parseFields(segments));
+        return new Schedule(parseCommand(segments), parseComponents(segments));
     }
 
     private String parseCommand(String[] segments) {
         return Arrays.stream(segments).skip(5).collect(Collectors.joining(" "));
     }
 
-    private Map<ChronoField, int[]> parseFields(String[] segments) {
-        return Map.of(
-                MINUTE_OF_HOUR, parser.parseField(CronFieldFormat.MINUTE, segments[0]),
-                HOUR_OF_DAY, parser.parseField(CronFieldFormat.HOUR, segments[1]),
-                DAY_OF_MONTH, parser.parseField(CronFieldFormat.DAY_OF_MONTH, segments[2]),
-                MONTH_OF_YEAR, parser.parseField(CronFieldFormat.MONTH, segments[3]),
-                DAY_OF_WEEK, parser.parseField(CronFieldFormat.DAY_OF_WEEK, segments[4])
+    private Map<Component, int[]> parseComponents(String[] segments) {
+        return Map.ofEntries(
+                parseComponent(MINUTE_OF_HOUR, segments[0]),
+                parseComponent(HOUR_OF_DAY, segments[1]),
+                parseComponent(DAY_OF_MONTH, segments[2]),
+                parseComponent(MONTH_OF_YEAR, segments[3]),
+                parseComponent(DAY_OF_WEEK, segments[4])
         );
+    }
+
+    private Map.Entry<Component, int[]> parseComponent(Component component, String segment) {
+        var values = parser.parseField(component.format, segment);
+        return new AbstractMap.SimpleImmutableEntry<>(component, values);
     }
 }

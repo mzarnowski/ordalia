@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 final class FieldParser {
-    public int[] parseField(FieldFormat format, String segment) {
+    int[] parseField(FieldFormat format, String segment) {
         return Arrays.stream(segment.split(","))
                 .flatMapToInt(it -> parseValues(format, it))
                 .distinct()

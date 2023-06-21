@@ -2,12 +2,12 @@ package dev.mzarnowski.cron;
 
 import java.util.List;
 
-public enum CronFieldFormat implements FieldFormat{
-    MINUTE(0, 60),
-    HOUR(0, 24),
+enum CronFieldFormat implements FieldFormat {
+    MINUTE_OF_HOUR(0, 60),
+    HOUR_OF_DAY(0, 24),
     DAY_OF_MONTH(1, 31),
     DAY_OF_WEEK(0, "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"),
-    MONTH(1,"JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    MONTH_OF_YEAR(1, "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
             "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
 
     private final int min;
@@ -28,15 +28,15 @@ public enum CronFieldFormat implements FieldFormat{
         this.mnemonics = List.of(mnemonics);
     }
 
-    public int min(){
+    public int min() {
         return min;
     }
 
-    public int max(){
+    public int max() {
         return max;
     }
 
-    public List<String> mnemonics(){
+    public List<String> mnemonics() {
         return mnemonics;
     }
 }

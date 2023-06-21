@@ -3,14 +3,14 @@ package dev.mzarnowski.cron;
 import java.text.CharacterIterator;
 import java.util.function.IntPredicate;
 
-public class Tokenizer {
+class Tokenizer {
     private final CharacterIterator iterator;
 
-    public Tokenizer(CharacterIterator iterator) {
+    Tokenizer(CharacterIterator iterator) {
         this.iterator = iterator;
     }
 
-    public boolean skip(char value){
+    boolean skip(char value) {
         if (iterator.current() == value) {
             iterator.next();
             return true;
@@ -19,11 +19,11 @@ public class Tokenizer {
         return false;
     }
 
-    public boolean eol(){
+    boolean eol() {
         return iterator.current() == CharacterIterator.DONE;
     }
 
-    public int number(){
+    int number() {
         var token = takeWhile(Character::isDigit);
         if (token == null) throw new ParseException("Expected digit, got " + iterator.current());
         try {
@@ -33,10 +33,10 @@ public class Tokenizer {
         }
     }
 
-    public String takeWhile(IntPredicate predicate) {
+    String takeWhile(IntPredicate predicate) {
         var c = iterator.current();
         var token = new StringBuilder();
-        while (predicate.test(c)){
+        while (predicate.test(c)) {
             token.append(c);
             c = iterator.next();
         }
