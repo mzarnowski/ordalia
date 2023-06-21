@@ -21,3 +21,7 @@ dependencies {
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
+
+application {
+    mainClass.set("dev.mzarnowski.cron.Application")
+}
