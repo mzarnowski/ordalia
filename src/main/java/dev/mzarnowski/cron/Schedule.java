@@ -8,6 +8,7 @@ public record Schedule(String command, Map<Component, int[]> components) {
         var parser = CronExpressionParser.create();
         return parser.parse(expression);
     }
+
     public enum Component {
         MINUTE_OF_HOUR(CronFieldFormat.MINUTE_OF_HOUR),
         HOUR_OF_DAY(CronFieldFormat.HOUR_OF_DAY),
