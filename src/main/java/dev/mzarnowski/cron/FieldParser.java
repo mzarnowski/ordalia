@@ -1,13 +1,22 @@
 package dev.mzarnowski.cron;
 
 import java.text.StringCharacterIterator;
+import java.util.Arrays;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public final class FieldParser {
+final class FieldParser {
     public int[] parseField(FieldFormat format, String segment) {
+        return Arrays.stream(segment.split(","))
+                .flatMapToInt(it -> parseValues(format, it))
+                .distinct()
+                .sorted()
+                .toArray();
+    }
+
+    private IntStream parseValues(FieldFormat format, String segment) {
         var iterator = new StringCharacterIterator(segment);
         var tokenizer = new Tokenizer(iterator);
 
@@ -83,7 +92,7 @@ public final class FieldParser {
         throw new ParseException("Invalid token: " + token);
     }
 
-    private static int[] parseWildcard(FieldFormat format, Tokenizer tokenizer) {
+    private static IntStream parseWildcard(FieldFormat format, Tokenizer tokenizer) {
         if (tokenizer.eol()) return enumerate(format.min(), format.max(), 1);
         else if (tokenizer.skip('/')) {
             var interval = tokenizer.number();
@@ -93,9 +102,9 @@ public final class FieldParser {
         }
     }
 
-    private static int[] enumerate(int start, int end, int step) {
-        if (step == 1) return IntStream.range(start, end + 1).toArray();
-        return IntStream.iterate(start, (it) -> it < end + 1, (it) -> it + step).toArray();
+    private static IntStream enumerate(int start, int end, int step) {
+        if (step == 1) return IntStream.range(start, end + 1);
+        return IntStream.iterate(start, (it) -> it < end + 1, (it) -> it + step);
     }
 
     @FunctionalInterface

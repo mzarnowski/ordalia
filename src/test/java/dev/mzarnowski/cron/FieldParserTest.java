@@ -44,7 +44,8 @@ class FieldParserTest {
                     offsetIntervals(), mnemonicOffsetIntervals(),
                     valueRanges(), mnemonicRanges(),
                     rangeIntervals(), mnemonicRangeIntervals(),
-                    wildcard(), wildcardIntervals());
+                    wildcard(), wildcardIntervals(),
+                    lists());
 
             return specs.flatMap(identity());
         }
@@ -138,6 +139,16 @@ class FieldParserTest {
                     spec("*/4", 4)
             );
         }
+
+        private Stream<Arguments> lists() {
+            return Stream.of(
+                    spec("4,5", 4, 5),
+                    spec("5,4", 4, 5),
+                    spec("4,B", 4, 5),
+                    spec("4,6-7", 4, 6, 7),
+                    spec("4,6-D/2", 4, 6)
+            );
+        }
     }
 
     static class InvalidFieldExpressionExamples implements ArgumentsProvider {
@@ -152,7 +163,8 @@ class FieldParserTest {
                     invalidRanges(), invalidMnemonicRanges(),
                     invalidWildcards(),
                     invalidValueIntervals(), invalidMnemonicValueIntervals(),
-                    invalidRangeIntervals(), invalidMnemonicRangeIntervals());
+                    invalidRangeIntervals(), invalidMnemonicRangeIntervals(),
+                    invalidList());
 
             return streams.flatMap(identity());
         }
@@ -197,6 +209,10 @@ class FieldParserTest {
 
         private Stream<Arguments> invalidMnemonicRangeIntervals() {
             return examples("A-B/", "4-5/A");
+        }
+
+        private Stream<Arguments> invalidList() {
+            return examples(",1", "1,", "1,,2", "4,5,1");
         }
     }
 
