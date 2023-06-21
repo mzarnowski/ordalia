@@ -1,1 +1,1 @@
-rootProject.name = "cron-schedule"
+rootProject.name = "cron-parser"
